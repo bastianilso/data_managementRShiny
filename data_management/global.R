@@ -1,2 +1,5 @@
 source("modules/csv_upload_module.R")
+source("modules/db_select_module.R")
+source("modules/db_session_row_module.R")
 source("utils/loadrawdata.R")
+source("utils/loaddbdata.R")

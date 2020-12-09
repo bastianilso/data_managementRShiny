@@ -11,6 +11,7 @@ library(shinyjs)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
+    useShinyjs(debug=T),
     # Input ----------------
     fluidRow(
         column(4, titlePanel("Data Management"),),
@@ -22,6 +23,10 @@ shinyUI(fluidPage(
                              actionButton(
                                  "CsvButton",
                                  "Upload CSV files"
+                             ),
+                             actionButton(
+                                 "DbButton",
+                                 "Select From DB"
                              ),
                              textOutput("maintext")
                              #fileInput("fileMeta", "Choose Meta CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),

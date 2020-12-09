@@ -11,16 +11,20 @@ library(shiny)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-
-    df <- callModule(csv_upload, "uploadData")
+    df_csv <- callModule(csv_upload, "uploadData")
+    df_db <- callModule(db_select, "selectData")
     
     output$maintext <- renderText({
-        paste(names(df()))
+        paste(names(df_db()))
     })
     
     observeEvent(input$CsvButton, {
         insertUI(selector = "#CsvButton", where = "afterEnd",
                  ui = showModal(modalDialog(csv_upload_UI("uploadData"), easyClose = TRUE)))
     })
-
+    observeEvent(input$DbButton, {
+        insertUI(selector = "#DbButton", where = "afterEnd",
+                 ui = showModal(modalDialog(db_select_UI("selectData"), easyClose = TRUE)))
+    })
+    
 })
