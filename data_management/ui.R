@@ -28,6 +28,11 @@ shinyUI(fluidPage(
                                  "DbButton",
                                  "Select From DB"
                              ),
+                             actionButton(
+                                 "RefreshButton",
+                                 label = "",
+                                 icon=icon("sync", class = "fa-1x", lib="font-awesome")
+                             ),
                              textOutput("maintext")
                              #fileInput("fileMeta", "Choose Meta CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
                              #fileInput("fileEvent", "Choose Event CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
