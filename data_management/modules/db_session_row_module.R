@@ -11,18 +11,19 @@ db_session_row_UI <- function(id) {
   )
 }
 
-db_session_row <- function(input, output, session, active_session_r, sesid, email, timestamp) {
+db_session_row <- function(input, output, session, active_session, sesid, email, timestamp) {
   ns <- session$ns
-  UpdateText(input, output, session, active_session_r(), sesid, email, timestamp)
+  UpdateText(input, output, session, active_session, sesid, email, timestamp)
   
   observeEvent(input$actionDelete, {
-    UpdateText(input, output, session, active_session_r(), sesid, email, timestamp,markForDeletion=TRUE)
+    UpdateText(input, output, session, active_session, sesid, email, timestamp,markForDeletion=TRUE)
     MarkDataForDeletion("hammel_dec2020_meta_2","SessionID",sesid)
   })
   
   observeEvent(input$actionChoose, {
-    active_session_r <- reactive(sesid)
     SetSessionID(sesid)
+    UpdateText(input, output, session, sesid, sesid, email, timestamp)
+    removeModal()
   })
   
 }
