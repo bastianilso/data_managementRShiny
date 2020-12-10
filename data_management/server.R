@@ -11,11 +11,11 @@ library(shiny)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-    df_csv <- callModule(csv_upload, "uploadData")
-    df_db <- callModule(db_select, "selectData")
+    #df_csv <- callModule(csv_upload, "uploadData")
+    df <- reactive({ callModule(db_select, "selectData") })
     
     output$maintext <- renderText({
-        paste(names(df_db()))
+        paste(names(df()))
     })
     
     observeEvent(input$CsvButton, {

@@ -1,4 +1,5 @@
 df_meta = NULL
+df = NULL
 
 db_select_UI <- function(id) {
   ns = NS(id)
@@ -13,19 +14,23 @@ db_select_UI <- function(id) {
   )
 }
 
-db_select <- function(input, output, session) {
+db_select <- function(input, output, session, df) {
   ns <- session$ns
   
   if (is.null(df_meta)) {
     auth <- read.csv("credentials.csv", header=TRUE,sep=",", colClasses=c("character","character","character","character"))
     ConnectToServer(auth)
     meta <- unique(RetreiveAllData("Meta"))
-    active <- as.character(meta$SessionID[1])
-    SetSessionID(active)
-    full <- RetreiveCurrentData()
     df_meta <- reactive(meta)
-    df <- reactive(full)
+    #df <- RetreiveCurrentData()
   }
+  
+  active_session = GetSessionID()
+  if (active_session == "NA") {
+    active_session <- as.character(meta$SessionID[1])
+    SetSessionID(active_session)
+  }
+  active_session_r = reactive(active_session)
   
   observeEvent(df_meta(), {
     has_data = !is.null(df_meta)
@@ -42,9 +47,13 @@ db_select <- function(input, output, session) {
       lapply(1:length(ids), function(i) {
         # Note to self: use ns(i) for UI functions.
         # But don't use ns(i) for callModule functions.
-        callModule(db_session_row, i, active, ids[i], emails[i], timestamps[i])
+        callModule(db_session_row, i, active_session_r, ids[i], emails[i], timestamps[i])
       })
     }
+  })
+  
+  observeEvent(active_session_r(), {
+    df <<- RetreiveCurrentData()
   })
   
   return (df)
