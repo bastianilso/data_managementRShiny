@@ -5,24 +5,30 @@ db_table_meta <- "hammel_dec2020_meta_2"
 db_table_event <- "hammel_dec2020_event_2"
 db_table_sample <- "hammel_dec2020_sample_2"
 db_sessionid <- "NA"
+connected = FALSE
 
 SetTableMeta <- function(newname) {
-  db_table_meta <- newname
+  db_table_meta <<- newname
 }
 
 SetTableEvent <- function(newname) {
-  db_table_event <- newname
+  db_table_event <<- newname
 }
 
 SetSessionID <- function(newID) {
-  db_sessionid <- newID
+  db_sessionid <<- newID
 }
 
 GetSessionID <- function() {
   return(db_sessionid)
 }
 
+GetConnectedToServer <- function() {
+  return(connected)
+}
+
 ConnectToServer <- function(auth_data) {
+  connected = FALSE
   lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
   mydb <<- dbConnect(MySQL(),
                    user=auth_data[1, "username"],
@@ -31,6 +37,10 @@ ConnectToServer <- function(auth_data) {
                    # rstudioapi::askForPassword("Database password"),
                    dbname=auth_data[1, "dbname"],
                    host=auth_data[1, "host"])
+  if (!is.null(mydb)) {
+    connected = TRUE
+  }
+  return(connected)
 }
 
 # RetreiveUniqueColmnVals() Used to get unique values available for a column
@@ -90,14 +100,14 @@ RetreiveCurrentData <- function(type = "Full") {
 RetreiveDataSet <- function(tablename, column = "NA", colvalue= "NA") {
   queryString = "SELECT *"
   queryString = paste(queryString, "FROM",tablename, sep = " ")
+  queryString = paste(queryString, "WHERE FlagDelete=0")
   if (colvalue != "NA") {
-    queryString = paste(queryString, "WHERE",column,"= ",sep=" ")
+    queryString = paste(queryString, "AND",column,"= ",sep=" ")
     queryString = paste(queryString,"\'",colvalue,"\'",sep="")
   }
-  queryString = paste(queryString, "WHERE FlagDelete=0")
   print(queryString)
   res = dbSendQuery(mydb, queryString)
-  df = fetch(res, n=-1) 
+  df = fetch(res, n=-1)
   dbClearResult(dbListResults(mydb)[[1]])
   return(df)
 }
