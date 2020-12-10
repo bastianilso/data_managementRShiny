@@ -1,3 +1,4 @@
+csv_upload_df = NULL
 csv_upload_UI <- function(id) {
   ns = NS(id)
   list(
@@ -19,7 +20,7 @@ csv_upload_UI <- function(id) {
 }
 csv_upload <- function(input, output, session) {
   ns <- session$ns
-  df <- reactive ({
+  csv_upload_df <<- reactive ({
     load_files <- !is.null(input$fileMeta) && !is.null(input$fileEvent) &&
       !is.null(input$fileSample)
     if (load_files) {
@@ -29,14 +30,16 @@ csv_upload <- function(input, output, session) {
     }
   })
   
-  observeEvent(df(), {
-    has_data = !is.null(df)
+  observeEvent(csv_upload_df(), {
+    has_data = !is.null(csv_upload_df)
     if (has_data) {
       output$statusText <- renderText({ " Data Received Successfully!" })
     insertUI(selector = paste0("#", ns("statusText")), where="afterBegin",
             ui = icon("check", class = "fa-1x", lib="font-awesome"))
     }
   })
-  
-  return (df)
+}
+
+GetCSVUploadDf <- function() {
+  return(csv_upload_df)
 }
