@@ -11,18 +11,23 @@ db_session_row_UI <- function(id) {
   )
 }
 
-db_session_row <- function(input, output, session, chosenid = NULL, sesid, email, timestamp) {
+db_session_row <- function(input, output, session, active_session_r, sesid, email, timestamp) {
   ns <- session$ns
-  UpdateText(input, output, session, chosenid, sesid, email, timestamp)
+  UpdateText(input, output, session, active_session_r(), sesid, email, timestamp)
   
   observeEvent(input$actionDelete, {
-    UpdateText(input, output, session, chosenid, sesid, email, timestamp,markForDeletion=TRUE)
+    UpdateText(input, output, session, active_session_r(), sesid, email, timestamp,markForDeletion=TRUE)
     MarkDataForDeletion("hammel_dec2020_meta_2","SessionID",sesid)
+  })
+  
+  observeEvent(input$actionChoose, {
+    active_session_r <- reactive(sesid)
+    SetSessionID(sesid)
   })
   
 }
 
-UpdateText <- function(input, output, session, chosenid = NULL, sesid, email, timestamp,markForDeletion=F) {
+UpdateText <- function(input, output, session, active_session, sesid, email, timestamp,markForDeletion=F) {
   time <- sprintf("%02d:%02d", hour(timestamp), minute(timestamp))
   weekday <- wday(timestamp, abbr = F, label=T)
   thedate <- format(date(timestamp), "%d %b %Y")
@@ -30,7 +35,7 @@ UpdateText <- function(input, output, session, chosenid = NULL, sesid, email, ti
   theid <- str_sub(sesid,-6,-1)
   style = ""
   styletext = ""
-  if (chosenid == sesid) {
+  if (active_session == sesid) {
     style = "class='bg-success'"
     styletext = " <strong>(Active)</strong>"
   }
