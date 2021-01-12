@@ -18,34 +18,31 @@ shinyServer(function(input, output) {
         connected = ConnectToServer(auth)
     }
     
-    callModule(db_select, "selectData", connected)
-    callModule(csv_upload, "uploadData")
-    r <- reactiveValues(choice = 'db',
-                        df = NULL,
-                        df_db = RetreiveCurrentData(),
-                        df_csv = GetCSVUploadDf())
+    r <- reactiveValues(df = NULL, meta = NULL, source = NULL)
+    
+    
+    db_data <- callModule(db_select, "selectData", connected)
+    csv_data <- callModule(csv_upload, "uploadData")
+    callModule(data_selection_summary,"input_info", reactive(r$df))
+    
+    observeEvent(csv_data$trigger, {
+        req(csv_data$trigger > 0)
+        r$df <- csv_data$df
+        r$source <- 'csv data'
+    })
+    observeEvent(db_data$trigger, {
+        req(db_data$trigger > 0)
+        r$df <- db_data$df
+        r$source <- db_data$session
+    })
     
     observeEvent(input$CsvButton, {
         insertUI(selector = "#CsvButton", where = "afterEnd",
                  ui = showModal(modalDialog(csv_upload_UI("uploadData"), easyClose = TRUE)))
-        r$choice <- 'csv'
     })
     observeEvent(input$DbButton, {
         insertUI(selector = "#DbButton", where = "afterEnd",
                  ui = showModal(modalDialog(db_select_UI("selectData"), easyClose = TRUE)))
-        r$choice <- 'db'
-    })
-    observeEvent(input$RefreshButton, {
-        if (r$choice == 'db') { #is.null(r$df_csv())
-            r$df <- RetreiveCurrentData()
-        } else if (r$choice == 'csv') {
-            r$df <- GetCSVUploadDf()()
-        }
-    })
-
-    output$maintext <- renderText({
-        req(!is.null(r$df))
-        paste(names(r$df))
     })
     
 })

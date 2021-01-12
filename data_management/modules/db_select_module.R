@@ -14,40 +14,63 @@ db_select_UI <- function(id) {
 db_select <- function(input, output, session, connected) {
   ns <- session$ns
   
-  use_db = FALSE
+  meta = NULL
   active_session = ""
-  df_meta = reactive(NULL)
+  current_trigger = 0
+  active_df = NULL
   
   if (connected) {
-    use_db = TRUE
     meta <- unique(RetreiveAllData("Meta"))
     active_session = GetSessionID()
     if (active_session == "NA") {
       active_session <- as.character(meta$SessionID[1])
       SetSessionID(active_session)
     }
-    df_meta <- reactive(meta)
+    active_df = RetreiveCurrentData()
+    current_trigger = current_trigger + 1
   }
-  
-  observeEvent(df_meta(), {
-    has_data = !is.null(df_meta())
-    if (has_data) {
-      ids <- df_meta()$SessionID
-      timestamps <- df_meta()$Timestamp
-      emails <- df_meta()$Email
-      output$statusText <- renderText({ paste(length(ids), "sessions available.") })
-      output$sessionList <- renderUI({
-        lapply(1:length(ids), function(i) {
-          db_session_row_UI(ns(i))
-        })
-      })
-      lapply(1:length(ids), function(i) {
-        # Note to self: use ns(i) for UI functions.
-        # But don't use ns(i) for callModule functions.
-        callModule(db_session_row, i, active_session, ids[i], emails[i], timestamps[i])
-      })
-    }
-  })
 
-  return(use_db)
+  toReturn <- reactiveValues(
+    df = active_df,
+    df_meta = meta,
+    session = active_session,
+    trigger = current_trigger
+  )
+  
+  observeEvent(toReturn$df_meta, {
+    req(!is.null(toReturn$df_meta))
+    ids <- toReturn$df_meta$SessionID
+    timestamps <- toReturn$df_meta$Timestamp
+    emails <- toReturn$df_meta$Email
+    output$statusText <- renderText({ paste(length(ids), "sessions available.") })
+    output$sessionList <- renderUI({
+      lapply(1:length(ids), function(i) {
+        if (ids[i] == toReturn$session) {
+          tags$div(class = "font-weight-bold text-primary",
+             db_session_row_UI(ns(i))
+          )
+        } else {
+          db_session_row_UI(ns(i))
+        }
+      })
+    })
+    
+    chosen_row <- lapply(1:length(ids), function(i) {
+      callModule(db_session_row, i, meta$SessionID[i],meta$Email[i],meta$Timestamp[i])
+    })
+    
+    lapply(chosen_row, function(row) {
+      observeEvent(row$active, {
+        req(row$trigger > 0)
+        SetSessionID(row$sesid)
+        toReturn$df <<- RetreiveCurrentData()
+        toReturn$session <<- row$sesid
+        toReturn$trigger <<- toReturn$trigger + 1
+        
+      })
+    })
+    
+  })
+  
+  return(toReturn)
 }

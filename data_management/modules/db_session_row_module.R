@@ -11,24 +11,29 @@ db_session_row_UI <- function(id) {
   )
 }
 
-db_session_row <- function(input, output, session, active_session, sesid, email, timestamp) {
+db_session_row <- function(input, output, session, sesid, email, timestamp) {
   ns <- session$ns
-  UpdateText(input, output, session, active_session, sesid, email, timestamp)
+  
+  toReturn <- reactiveValues(active = F, sesid = sesid, trigger = 0)
+  
+  db_session_row_UpdateText(input, output, session, sesid, email, timestamp)
   
   observeEvent(input$actionDelete, {
-    UpdateText(input, output, session, active_session, sesid, email, timestamp,markForDeletion=TRUE)
+    db_session_row_UpdateText(input, output, session, sesid, email, timestamp,markForDeletion=TRUE)
     MarkDataForDeletion("hammel_dec2020_meta_2","SessionID",sesid)
   })
   
   observeEvent(input$actionChoose, {
     SetSessionID(sesid)
-    UpdateText(input, output, session, sesid, sesid, email, timestamp)
+    toReturn$active = T
+    toReturn$trigger = toReturn$trigger + 1
     removeModal()
   })
   
+  return(toReturn)
 }
 
-UpdateText <- function(input, output, session, active_session, sesid, email, timestamp,markForDeletion=F) {
+db_session_row_UpdateText <- function(input, output, session, sesid, email, timestamp,markForDeletion=F) {
   time <- sprintf("%02d:%02d", hour(timestamp), minute(timestamp))
   weekday <- wday(timestamp, abbr = F, label=T)
   thedate <- format(date(timestamp), "%d %b %Y")
@@ -36,10 +41,6 @@ UpdateText <- function(input, output, session, active_session, sesid, email, tim
   theid <- str_sub(sesid,-6,-1)
   style = ""
   styletext = ""
-  if (active_session == sesid) {
-    style = "class='bg-success'"
-    styletext = " <strong>(Active)</strong>"
-  }
   if (markForDeletion) {
     style = "class='bg-danger'"
     styletext = " <strong>(Marked For Deletion)</strong>"

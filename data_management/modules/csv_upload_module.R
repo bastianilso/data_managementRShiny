@@ -1,4 +1,4 @@
-csv_upload_df = NULL
+#csv_upload_df = NULL
 csv_upload_UI <- function(id) {
   ns = NS(id)
   list(
@@ -15,31 +15,33 @@ csv_upload_UI <- function(id) {
     fileInput(
       ns("fileSample"),
       "Choose Sample CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
+    actionButton(ns("actionSubmit"), "Submit"),
     textOutput(ns("statusText"))
   )
 }
+
 csv_upload <- function(input, output, session) {
   ns <- session$ns
-  csv_upload_df <<- reactive ({
-    load_files <- !is.null(input$fileMeta) && !is.null(input$fileEvent) &&
-      !is.null(input$fileSample)
+  
+  toReturn <- reactiveValues(
+    df = NULL,
+    trigger = 0
+  )
+  
+  observeEvent(input$actionSubmit, {
+    load_files <- !is.null(input$fileMeta) && !is.null(input$fileEvent) && !is.null(input$fileSample)
     if (load_files) {
-      LoadFromFilePaths(input$fileMeta$datapath, input$fileEvent$datapath, input$fileSample$datapath)
-    } else {
-      NULL
+      toReturn$df <-  LoadFromFilePaths(input$fileMeta$datapath, input$fileEvent$datapath, input$fileSample$datapath)
+      toReturn$trigger <- toReturn$trigger + 1
     }
   })
   
-  observeEvent(csv_upload_df(), {
-    has_data = !is.null(csv_upload_df)
-    if (has_data) {
-      output$statusText <- renderText({ " Data Received Successfully!" })
+  observeEvent(toReturn$df, {
+    req(!is.null(toReturn$df))
+    output$statusText <- renderText({ " Data Received Successfully!" })
     insertUI(selector = paste0("#", ns("statusText")), where="afterBegin",
             ui = icon("check", class = "fa-1x", lib="font-awesome"))
-    }
   })
-}
-
-GetCSVUploadDf <- function() {
-  return(csv_upload_df)
+  
+  return(toReturn)
 }

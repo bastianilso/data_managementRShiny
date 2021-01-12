@@ -14,33 +14,18 @@ shinyUI(fluidPage(
     useShinyjs(debug=T),
     # Input ----------------
     fluidRow(
-        column(4, titlePanel("Data Management"),),
+        column(4, titlePanel("Data Management")),
+    ),
+    fluidRow(
+        column(2, data_selection_summary_UI("input_info")),
+        column(3, actionButton("CsvButton","Manual Upload"),
+                  actionButton("DbButton", "Change Data"))
     ),
     #  Output ----------------
     tabsetPanel(id = "dataTypeChooser", type = "tabs",
-                tabPanel(value  = "CSVPanel", id = "Timeline", strong("Upload CSV"),
-                         mainPanel(
-                             actionButton(
-                                 "CsvButton",
-                                 "Upload CSV files"
-                             ),
-                             actionButton(
-                                 "DbButton",
-                                 "Select From DB"
-                             ),
-                             actionButton(
-                                 "RefreshButton",
-                                 label = "",
-                                 icon=icon("sync", class = "fa-1x", lib="font-awesome")
-                             ),
-                             textOutput("maintext")
-                             #fileInput("fileMeta", "Choose Meta CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
-                             #fileInput("fileEvent", "Choose Event CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
-                             #fileInput("fileSample", "Choose Sample CSV File", accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
-                             #actionButton("visButton", "Upload"),
-                         ),
-                ),
-                # Rest of Page ---------------------------------------------------------------
-                tags$footer()
+        tabPanel(value  = "Data", id = "Timeline", strong("Data"),
+        ),
+        # Rest of Page ---------------------------------------------------------------
+        tags$footer()
     )
 ))
