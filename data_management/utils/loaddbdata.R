@@ -3,7 +3,7 @@ library(RMySQL)
 mydb <- NULL
 db_table_meta <- "hammel_dec2020_meta_2"
 db_table_event <- "hammel_dec2020_event_2"
-db_table_sample <- "hammel_dec2020_sample_2"
+db_table_sample <- "hammel_dec2020_sample_3"
 db_sessionid <- "NA"
 connected = FALSE
 
@@ -30,16 +30,21 @@ GetConnectedToServer <- function() {
 ConnectToServer <- function(auth_data) {
   connected = FALSE
   lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
-  mydb <<- dbConnect(MySQL(),
-                   user=auth_data[1, "username"],
-                   # rstudioapi::askForPassword("Database user"),
-                   password=auth_data[1, "password"],
-                   # rstudioapi::askForPassword("Database password"),
-                   dbname=auth_data[1, "dbname"],
-                   host=auth_data[1, "host"])
-  if (!is.null(mydb)) {
-    connected = TRUE
-  }
+  tryCatch({
+    mydb <<- dbConnect(MySQL(),
+                     user=auth_data[1, "username"],
+                     # rstudioapi::askForPassword("Database user"),
+                     password=auth_data[1, "password"],
+                     # rstudioapi::askForPassword("Database password"),
+                     dbname=auth_data[1, "dbname"],
+                     host=auth_data[1, "host"])
+  },error=function(cond) {
+    message("Could not connect to database.")
+  },finally={
+    if (!is.null(mydb)) {
+      connected = TRUE
+    }
+  })
   return(connected)
 }
 
@@ -110,26 +115,6 @@ RetreiveDataSet <- function(tablename, column = "NA", colvalue= "NA") {
   df = fetch(res, n=-1)
   dbClearResult(dbListResults(mydb)[[1]])
   return(df)
-}
-
-# RefreshDataSet is a helper function called in the app for refreshing TunnelGoalFitts dataset.
-# Setting colfilter to NULL retreives all data.
-# USAGE:
-# RefreshDataSets("mhel@create.aau.dk")
-RefreshDataSets <- function(colfilter) {
-  if (colfilter == "-1") {
-    # -1 is the default value R Shiny uses on startup.
-    return()
-  }
-  # REFRESH REACTION TIME DATASET
-  df<<- RetreiveDataSet("whack_vr_rtii","Email",colfilter)
-  print(nrow(df))
-  df$GameState<<-as.factor(df$GameState)
-  df$GameState<<-factor(df$GameState,levels = c("Stopped", "Playing","Paused"))
-  df$PID <<- df$ParticipantId
-  df$TrialNo <<- df$TestId
-  df$PID <<- as.factor(df$PID)
-  df$TrialNo <<- as.factor(df$TrialNo)
 }
 
 MarkDataForDeletion <- function(tablename, column = "NA", colvalue= "NA", delete=T) {
