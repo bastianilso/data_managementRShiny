@@ -55,9 +55,9 @@ LoadFromDirectory <- function(dir, event = "Event", sample = "Sample", meta = "M
 
 PreprocessMeta <- function(dataset_meta) {
   dataset_meta <- dataset_meta %>%
-    mutate(Timestamp = NULL,
-           Email = NULL,
-           Framecount = NULL)
+    rename(MetaTimestamp = Timestamp,
+           MetaEmail = Email,
+           MetaFramecount = Framecount)
   return(dataset_meta)
 }
 
