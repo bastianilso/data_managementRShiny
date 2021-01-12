@@ -8,6 +8,7 @@ This repository provides a modules to handle and show data from CSV files and Da
 
 ## User Interface
 ![image](https://user-images.githubusercontent.com/3967945/104312130-7950b900-54d6-11eb-8edd-eed76fccd7f9.png)
+
 The application provides a minimal example user interface. CSV Upload and DB Select are shown as modal dialogs from two buttons. Data selection summary is shown as HTML output next to the buttons.
 
 ## CSV Upload Module
