@@ -5,23 +5,23 @@ db_table_event <<- NULL
 db_table_sample <<- NULL
 db_sessionid <<- "NA"
 
-Db_SetTableMeta <- function(newname) {
+SetTableMeta <- function(newname) {
   db_table_meta <<- newname
 }
 
-Db_SetTableEvent <- function(newname) {
+SetTableEvent <- function(newname) {
   db_table_event <<- newname
 }
 
-Db_SetTableSample <- function(newname) {
+SetTableSample <- function(newname) {
   db_table_sample <<- newname
 }
 
-Db_SetSessionID <- function(newID) {
+SetSessionID <- function(newID) {
   db_sessionid <<- newID
 }
 
-Db_GetSessionID <- function() {
+GetSessionID <- function() {
   return(db_sessionid)
 }
 
