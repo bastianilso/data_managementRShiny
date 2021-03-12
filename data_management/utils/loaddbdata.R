@@ -1,27 +1,27 @@
 library(RMySQL)
-mydb <<- NULL
+db_obj <<- NULL
 db_table_meta <<- NULL
 db_table_event <<- NULL
 db_table_sample <<- NULL
 db_sessionid <<- "NA"
 
-SetTableMeta <- function(newname) {
+Db_SetTableMeta <- function(newname) {
   db_table_meta <<- newname
 }
 
-SetTableEvent <- function(newname) {
+Db_SetTableEvent <- function(newname) {
   db_table_event <<- newname
 }
 
-SetTableSample <- function(newname) {
+Db_SetTableSample <- function(newname) {
   db_table_sample <<- newname
 }
 
-SetSessionID <- function(newID) {
+Db_SetSessionID <- function(newID) {
   db_sessionid <<- newID
 }
 
-GetSessionID <- function() {
+Db_GetSessionID <- function() {
   return(db_sessionid)
 }
 
@@ -32,7 +32,7 @@ ConnectToServer <- function(auth_data) {
   connected = FALSE
   lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
   tryCatch({
-    mydb <<- dbConnect(MySQL(),
+    db_obj <<- dbConnect(MySQL(),
                        user=auth_data[1, "username"],
                        # rstudioapi::askForPassword("Database user"),
                        password=auth_data[1, "password"],
@@ -42,7 +42,7 @@ ConnectToServer <- function(auth_data) {
   },error=function(cond) {
     message("Could not connect to database.")
   },finally={
-    if (!is.null(mydb)) {
+    if (!is.null(db_obj)) {
       connected = TRUE
     }
   })
@@ -54,9 +54,9 @@ ConnectToServer <- function(auth_data) {
 #dtest = RetreiveUniqueColmnVals("Email")
 RetreiveUniqueColVals <- function(tablename, column) {
   queryString = paste("SELECT DISTINCT",column,"FROM",tablename,sep=" ")
-  res = dbSendQuery(mydb, queryString)
+  res = dbSendQuery(db_obj, queryString)
   vals = fetch(res, n=-1)
-  dbClearResult(dbListResults(mydb)[[1]])
+  dbClearResult(dbListResults(db_obj)[[1]])
   unlisted_vals = unname(unlist(vals)) # if there are several values, they arrive as a list, so unlist them on arrival.
   sanitized_vals = gsub("[\r\n]", "", unlisted_vals)
   return(sanitized_vals)
@@ -110,9 +110,9 @@ RetreiveDataSet <- function(tablename, column = "NA", colvalue= "NA") {
     queryString = paste(queryString,"\'",colvalue,"\'",sep="")
   }
   print(queryString)
-  res = dbSendQuery(mydb, queryString)
+  res = dbSendQuery(db_obj, queryString)
   df = fetch(res, n=-1)
-  dbClearResult(dbListResults(mydb)[[1]])
+  dbClearResult(dbListResults(db_obj)[[1]])
   return(df)
 }
 
@@ -130,8 +130,8 @@ MarkDataForDeletion <- function(tablename, column = "NA", colvalue= "NA", delete
   }
   queryString = paste(queryString, "END")
   print(queryString)
-  res = dbSendQuery(mydb, queryString)
+  res = dbSendQuery(db_obj, queryString)
   df = fetch(res, n=-1) 
-  dbClearResult(dbListResults(mydb)[[1]])
+  dbClearResult(dbListResults(db_obj)[[1]])
   return(df)
 }
