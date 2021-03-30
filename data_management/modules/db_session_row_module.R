@@ -20,7 +20,7 @@ db_session_row <- function(input, output, session, sesid, email, timestamp) {
   
   observeEvent(input$actionDelete, {
     db_session_row_UpdateText(input, output, session, sesid, email, timestamp,markForDeletion=TRUE)
-    MarkDataForDeletion("hammel_dec2020_meta_2","SessionID",sesid)
+    MarkDataForDeletion("Meta","SessionID",sesid)
   })
   
   observeEvent(input$actionChoose, {
